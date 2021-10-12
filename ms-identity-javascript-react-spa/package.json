@@ -1,0 +1,33 @@
+{
+  "name": "msal-react-quickstart",
+  "version": "0.1.0",
+  "description": "A React single-page application calling Microsoft Graph API using MSAL.js (w/ AAD v2 endpoint)",
+  "private": true,
+  "dependencies": {},
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@azure/msal-browser": "^2.18.0",
+    "@azure/msal-react": "^1.1.0",
+    "bootstrap": "^4.5.3",
+    "react": "^17.0.2",
+    "react-bootstrap": "^1.3.0",
+    "react-dom": "^17.0.2",
+    "react-scripts": "^4.0.3",
+    "typescript": "^4.4.3"
+  }
+}
