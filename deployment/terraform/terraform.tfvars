@@ -1,3 +1,3 @@
-project = "apim2"
+project = "apim3"
 environment = "dev"
 location = "eastus2"

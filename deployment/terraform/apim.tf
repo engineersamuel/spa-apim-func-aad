@@ -17,15 +17,15 @@ resource "azurerm_api_management_api" "api_management_api_public" {
   revision              = "1"
   display_name          = "Public"
   path                  = ""
-  protocols             = [ "https" ]
+  protocols             = ["https"]
   service_url           = "https://${azurerm_function_app.function_app.default_hostname}/api"
   subscription_required = false
 
   // This maps to the Portal APIM -> APIs -> Public -> Settings -> Security Section
   // NOTE: This is likely not necessary unless setting up auth within the APIM portal as well
-  //oauth2_authorization {
-  //  authorization_server_name = azurerm_api_management_authorization_server.example.name
-  //}
+  oauth2_authorization {
+    authorization_server_name = azurerm_api_management_authorization_server.example.name
+  }
 }
 
 resource "azurerm_api_management_api_operation" "api_management_api_operation_public_hello_world" {
@@ -44,7 +44,7 @@ resource "azurerm_api_management_api_policy" "api_management_api_policy_api_publ
   api_management_name = azurerm_api_management.api_management.name
   resource_group_name = azurerm_resource_group.resource_group.name
 
-/*
+  /*
   // Example policy using Managed identity
   xml_content = <<XML
 <policies>
@@ -95,24 +95,24 @@ XML
 // TODO: Future feature: Enable OAuth for the APIM Developer console.
 // Instructions https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-protect-backend-with-aad#4-enable-oauth-20-user-authorization-in-the-developer-console
 // This section is what maps to the APIM -> OAuth 2.0 + OpenID Connection section in the portal
-/* resource "azurerm_api_management_authorization_server" "example" { */
-/*   name                = "test-auth-server" */
-/*   api_management_name = azurerm_api_management.api_management.name */
-/*   resource_group_name = azurerm_api_management.api_management.resource_group_name */
-/*   display_name        = "Test Auth Server" */
-/*   authorization_endpoint = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}/oauth2/v2.0/authorize" */
-/*   client_id = azuread_application.client.application_id */
-/*   // Terraform says this is required */
-/*   client_registration_endpoint = "http://localhost" */
-/*   bearer_token_sending_methods = [ "authorizationHeader" ] */
-/*   // Step 7. at https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-protect-backend-with-aad#4-enable-oauth-20-user-authorization-in-the-developer-console */
-/*   grant_types = [ */
-/*     "authorizationCode", */
-/*   ] */
-/*  */
-/*   // Step 8.b. at https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-protect-backend-with-aad#4-enable-oauth-20-user-authorization-in-the-developer-console */
-/*   authorization_methods = [ "GET", "POST" ] */
-/*  */
-/*   // Step 8.c. */
-/*   token_endpoint = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}/oauth2/v2.0/token" */
-/* } */
+resource "azurerm_api_management_authorization_server" "example" {
+  name                   = "test-auth-server"
+  api_management_name    = azurerm_api_management.api_management.name
+  resource_group_name    = azurerm_api_management.api_management.resource_group_name
+  display_name           = "Test Auth Server"
+  authorization_endpoint = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}/oauth2/v2.0/authorize"
+  client_id              = azuread_application.ad_client_app.application_id
+  // Terraform says this is required
+  client_registration_endpoint = "http://localhost"
+  bearer_token_sending_methods = ["authorizationHeader"]
+  // Step 7. at https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-protect-backend-with-aad#4-enable-oauth-20-user-authorization-in-the-developer-console
+  grant_types = [
+    "authorizationCode",
+  ]
+
+  // Step 8.b. at https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-protect-backend-with-aad#4-enable-oauth-20-user-authorization-in-the-developer-console
+  authorization_methods = ["GET", "POST"]
+
+  // Step 8.c.
+  token_endpoint = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}/oauth2/v2.0/token"
+}

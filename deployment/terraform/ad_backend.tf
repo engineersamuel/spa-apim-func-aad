@@ -34,6 +34,15 @@ resource "azuread_application" "ad_backend_app" {
   }
 }
 
+resource "azuread_service_principal" "backend_service_principal" {
+  application_id = azuread_application.ad_backend_app.application_id
+  app_role_assignment_required = false
+  owners = [ data.azuread_client_config.current.object_id ]
+  notification_email_addresses = []
+  alternative_names = []
+  tags = ["backend", "service principal"]
+}
+
 // https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/application_pre_authorized
 // This maps to the "Authorized client applications" within the Portal.
 /*

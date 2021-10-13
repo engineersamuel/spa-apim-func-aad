@@ -2,11 +2,12 @@ resource "azurerm_app_service_plan" "app_service_plan" {
   name                = "${var.project}-${var.environment}-app-service-plan"
   resource_group_name = azurerm_resource_group.resource_group.name
   location            = var.location
-  kind                = "elastic"
-  reserved            = true
+  kind                = "FunctionApp"
+  // kind             = "Linux"
+  // reserved         = true
   sku {
-    tier = "ElasticPremium"
-    size = "EP1"
+    tier = "Dynamic" // "ElasticPremium"
+    size = "Y1" // "EP1"
   }
 }
 
@@ -19,8 +20,10 @@ resource "azurerm_function_app" "function_app" {
     "WEBSITE_RUN_FROM_PACKAGE"              = "",
     "WEBSITES_ENABLE_APP_SERVICE_STORAGE"   = true,
     "FUNCTIONS_WORKER_RUNTIME"              = "node",
+    "WEBSITE_NODE_DEFAULT_VERSION"          = "~14"
   }
-  os_type = "linux"
+  # When set to "linux" this forces replacement on apply
+  #os_type = "linux"
   storage_account_name       = azurerm_storage_account.storage_account.name
   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
   version                    = "~3"
@@ -32,6 +35,7 @@ resource "azurerm_function_app" "function_app" {
     active_directory {
       // This points to the backend api
       client_id = azuread_application.ad_backend_app.application_id
+      // TODO: Add aud?
     }
     unauthenticated_client_action = "RedirectToLoginPage"
   }
@@ -41,20 +45,20 @@ resource "azurerm_function_app" "function_app" {
       app_settings["WEBSITE_RUN_FROM_PACKAGE"],
     ]
   }
+
 }
 
-resource "null_resource" "deploy_function" {
-
-  # triggers = {
-  #   always_run = timestamp()
-  # }
-
-  provisioner "local-exec" {
-    command = <<EOF
-      cd ../../functions
-      npm i
-      npm run build
-      func azure functionapp publish ${azurerm_function_app.function_app.name} --javascript
-    EOF
-  }
-}
+# This is an optional local-exec, it's commented out as it doesn't play well with initial deployment
+# resource "null_resource" "deploy_function" {
+#   # triggers = {
+#   #   always_run = timestamp()
+#   # }
+#   provisioner "local-exec" {
+#     command = <<EOF
+#       cd ../../functions
+#       npm i
+#       npm run build
+#       func azure functionapp publish ${azurerm_function_app.function_app.name} --javascript
+#     EOF
+#   }
+# }

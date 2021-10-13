@@ -18,32 +18,41 @@ resource "azuread_application" "ad_client_app" {
   }
 }
 
-// Note: if this fails you may need to manually grant admin consent: az ad app permission admin-consent --id 00000000-0000-0000-0000-000000000000
-// The id being the client app client id.
-resource "null_resource" "update_config" {
-  triggers = {
-    always_run = timestamp()
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-      cd ../../ms-identity-javascript-react-spa
-      npm i
-      cp src/config.example.json src/config.json
-      JSON_CONTENTS=$(jq '.clientId = "${azuread_application.ad_client_app.application_id}" | .authority = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}" | .scopes = [ "api://${azuread_application.ad_backend_app.display_name}/hello_world" ] | .functionHelloWorld = "${azurerm_api_management.api_management.gateway_url}/hello-world"' src/config.json)
-      echo "$JSON_CONTENTS" > src/config.json
-    EOF
-  }
+resource "azuread_service_principal" "client_service_principal" {
+  application_id = azuread_application.ad_client_app.application_id
+  app_role_assignment_required = false
+  owners = [ data.azuread_client_config.current.object_id ]
+  notification_email_addresses = []
+  alternative_names = []
+  tags = ["backend", "service principal"]
 }
 
-resource "null_resource" "admin_consent" {
-  # triggers = {
-  #   always_run = timestamp()
-  # }
+# This is an optional local-exec, it's commented out as it doesn't play well with initial deployment
+# resource "null_resource" "update_config" {
+#   # Uncomment this to force this to run each time
+#   # triggers = {
+#   #   always_run = timestamp()
+#   # }
 
-  provisioner "local-exec" {
-    command = <<EOF
-      az ad app permission admin-consent --id ${azuread_application.ad_client_app.application_id}
-    EOF
-  }
-}
+#   provisioner "local-exec" {
+#     command = <<EOF
+#       cd ../../ms-identity-javascript-react-spa
+#       npm i
+#       cp src/config.example.json src/config.json
+#       JSON_CONTENTS=$(jq '.clientId = "${azuread_application.ad_client_app.application_id}" | .authority = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}" | .scopes = [ "api://${azuread_application.ad_backend_app.display_name}/hello_world" ] | .functionHelloWorld = "${azurerm_api_management.api_management.gateway_url}/hello-world"' src/config.json)
+#       echo "$JSON_CONTENTS" > src/config.json
+#     EOF
+#   }
+# }
+
+# resource "null_resource" "admin_consent" {
+#   # triggers = {
+#   #   always_run = timestamp()
+#   # }
+
+#   provisioner "local-exec" {
+#     command = <<EOF
+#       az ad app permission admin-consent --id ${azuread_application.ad_client_app.application_id}
+#     EOF
+#   }
+# }
