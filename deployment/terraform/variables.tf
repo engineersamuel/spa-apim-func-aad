@@ -12,3 +12,9 @@ variable "location" {
   type = string
   description = "Azure region"
 }
+
+variable "apim_auth_server_name" {
+  type = string
+  description = "APIM Auth server name"
+  default = "test-auth-server"
+}

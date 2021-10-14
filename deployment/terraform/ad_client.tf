@@ -3,8 +3,21 @@ resource "azuread_application" "ad_client_app" {
   owners           = [ data.azuread_client_config.current.object_id ]
   sign_in_audience = "AzureADMultipleOrgs"
 
+  # Localhost for the local WebApp
   single_page_application {
-    redirect_uris = [ "http://localhost:3000/" ]
+    redirect_uris = [
+      "http://localhost:3000/",
+    ]
+  }
+
+  # This is for the APIM Developer portal
+  web {
+    redirect_uris = [
+      "${azurerm_api_management.api_management.developer_portal_url}/signin-oauth/code/callback/${var.apim_auth_server_name}"
+    ]
+    implicit_grant {
+      access_token_issuance_enabled = true
+    }
   }
 
   // This maps to API Permissions for the client

@@ -12,6 +12,12 @@ output "api_management_gateway_url" {
   value = azurerm_api_management.api_management.gateway_url
   description = "APIM instance gateway hostname"
 }
+
+output "api_management_developer_url" {
+  value = azurerm_api_management.api_management.developer_portal_url
+  description = "APIM instance developer hostname"
+}
+
 output "ad_client_app_app_id" {
   value = azuread_application.ad_client_app.application_id
   description = "Client registration app id"

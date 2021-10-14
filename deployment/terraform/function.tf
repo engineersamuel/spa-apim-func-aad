@@ -27,6 +27,15 @@ resource "azurerm_function_app" "function_app" {
   storage_account_name       = azurerm_storage_account.storage_account.name
   storage_account_access_key = azurerm_storage_account.storage_account.primary_access_key
   version                    = "~3"
+
+  site_config {
+    cors {
+      # azurerm_api_management.api_management.gateway_url
+      allowed_origins = [ azurerm_api_management.api_management.developer_portal_url ]
+      support_credentials = true
+    }
+  }
+
   auth_settings {
     enabled = true
     # https://docs.microsoft.com/en-us/azure/app-service/configure-authentication-provider-aad#-enable-azure-active-directory-in-your-app-service-app
@@ -45,7 +54,6 @@ resource "azurerm_function_app" "function_app" {
       app_settings["WEBSITE_RUN_FROM_PACKAGE"],
     ]
   }
-
 }
 
 # This is an optional local-exec, it's commented out as it doesn't play well with initial deployment

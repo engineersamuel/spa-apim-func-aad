@@ -25,6 +25,7 @@ resource "azurerm_api_management_api" "api_management_api_public" {
   // NOTE: This is likely not necessary unless setting up auth within the APIM portal as well
   oauth2_authorization {
     authorization_server_name = azurerm_api_management_authorization_server.example.name
+    scope = "api://${azuread_application.ad_backend_app.display_name}/hello_world"
   }
 }
 
@@ -92,11 +93,13 @@ XML
 XML
 }
 
-// TODO: Future feature: Enable OAuth for the APIM Developer console.
+// TODO: There is still an error here when attempting to authenticate in the dev portal:
+// "error_description": "AADSTS7000218: The request body must contain the following parameter: 'client_assertion' or 'client_secret', that would indicate the SP needs a client secret and for it to be set below
+// The documentation shows configuring a client secret, which is not what I'm doing below
 // Instructions https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-protect-backend-with-aad#4-enable-oauth-20-user-authorization-in-the-developer-console
 // This section is what maps to the APIM -> OAuth 2.0 + OpenID Connection section in the portal
 resource "azurerm_api_management_authorization_server" "example" {
-  name                   = "test-auth-server"
+  name                   = var.apim_auth_server_name
   api_management_name    = azurerm_api_management.api_management.name
   resource_group_name    = azurerm_api_management.api_management.resource_group_name
   display_name           = "Test Auth Server"
@@ -110,8 +113,14 @@ resource "azurerm_api_management_authorization_server" "example" {
     "authorizationCode",
   ]
 
+  default_scope = "api://${azuread_application.ad_backend_app.display_name}/hello_world"
+
   // Step 8.b. at https://docs.microsoft.com/en-us/azure/api-management/api-management-howto-protect-backend-with-aad#4-enable-oauth-20-user-authorization-in-the-developer-console
-  authorization_methods = ["GET", "POST"]
+  # authorization_methods = [ "GET", "POST"]
+  authorization_methods = [ "GET" ]
+
+  # TODO: Added this, may need to remove
+  # client_authentication_method = [ "Body" ]
 
   // Step 8.c.
   token_endpoint = "https://login.microsoftonline.com/${data.azurerm_client_config.current.tenant_id}/oauth2/v2.0/token"
